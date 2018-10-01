@@ -1,26 +1,47 @@
 # -*- coding: utf-8 -*-
 """
-Demo of confidence judgments of two different learners
+Demo confidence judgments
 
-More text
+This is the main script which sets up the experiment, trains the learners
+and plots the results
 """
 import numpy as np
 import matplotlib.pyplot as plt
 import agents as ag
-import sys
-import pdb
+#import pdb
 
 
 def setup_task(beta_prior, num_trials):
+    """
+    Set up the trials of the experiment and sample from the generative model
+
+    Draw values for repeated experiment of the 'coin problem'
+
+    Arguments:
+        beta_prior:
+            Parameter for symmetric Beta distribution
+        num_trial:
+            Number of trials of the whole experiment
+
+    Returns:
+        nh: array
+            Number of 'head' in one trial
+        num: array
+            Sample size
+        real_majority: array
+            Actual (latent) majority of items in the urn
+        ph: array
+            Actual (latent) proportion of items in the urn
+    """
 
     # Set of sample sizes
-    set_n = np.arange(6,13)
+    set_n = np.arange(6, 13)
 
     # Draws from multinomial distribution
     mask = np.random.multinomial(1, [1/set_n.size]*set_n.size, num_trials) == 1
 
     # Sample size for each trial
-    num = np.tile(set_n, (num_trials,1))[mask]
+    num = np.tile(set_n, (num_trials, 1))[mask]
 
     # Sample 'airplane proportions'
     ph = np.random.beta(beta_prior, beta_prior, num_trials)
@@ -39,7 +60,23 @@ def setup_task(beta_prior, num_trials):
 
 
 def main(num_trials=600, seed=None, beta_prior=4, step=2):
-#    pdb.set_trace()
+    """
+    Set parameters of the learners, compute the results and plot them.
+
+    Arguments:
+        num_trials:
+            Number of trials of the whole experiment
+        seed:
+            Set seed for reproducible results
+        beta_prior:
+            Parameter for symmetric Beta-distribution modeling the
+            base rates of the generative model
+        step:
+            Step-size for model-free learner using stochastic gradient descent
+
+    Returns:
+        None
+    """
 
     # For reproducible results
     np.random.seed(seed)
@@ -50,7 +87,8 @@ def main(num_trials=600, seed=None, beta_prior=4, step=2):
     ideal = ag.ProbabilisticConfidence(nh, num, beta_prior, beta_prior)
     dec = ideal.decision
 
-    # Confidence of ideal observer estimates the probability of making correct choices
+    # Confidence of ideal observer estimates the probability of
+    # making correct choices
     prob_correct_choice = ideal.align_to_decision(ideal.confidence_h)
 
     # Decision rule is the same for all agents) except tie breaking
@@ -75,27 +113,38 @@ def main(num_trials=600, seed=None, beta_prior=4, step=2):
     # Learning from feedback
     mapping_sgd.decision_feedback(real_majority)
     # Use same initial weights
-    mapping_sgd.random_initial_weights(0, 2) # TODO W0
+    mapping_sgd.W = W0
     mapping_sgd.confidence_sgd_learning(step)
 
     def movmean(x, N):  # TODO handle edge effects
+        """Moving mean over window of N trials
+
+        Arguments:
+            x: array
+                Data to be smoothed
+            N:
+                Size of smoothing window
+
+        Returns:
+            Smoothed array of input x
+        """
         return np.convolve(x, np.ones(N)/N)[(N-1):]
 
     devA2Batch = np.abs(mapping_batch.confidence_d - prob_correct_choice)
     devA2SGD = np.abs(mapping_sgd.confidence_d - prob_correct_choice)
     devA1 = np.abs(prob_mismatched.confidence_d - prob_correct_choice)
 
-    num_trials = len(nh)    # TODO improve
-    leg = plt.plot(np.arange(num_trials)+1, movmean(devA1,30),
-             np.arange(num_trials)+1, movmean(devA2Batch,30),
-             np.arange(num_trials)+1, movmean(devA2SGD,30))
+    num_trials = len(nh)
+    leg = plt.plot(np.arange(num_trials) + 1, movmean(devA1, 30),
+                   np.arange(num_trials) + 1, movmean(devA2Batch, 30),
+                   np.arange(num_trials) + 1, movmean(devA2SGD, 30))
 
     font = {'family': 'serif', 'size': 12}
     plt.xlabel('trial number', font)
     plt.ylabel('deviation', font)
-    plt.legend(leg, ('A1', 'A2 batch', 'A2 sgd'), frameon=False)
+    plt.legend(leg, ('prob', 'map batch', 'map sgd'), frameon=False)
+    plt.savefig('comparison_agents.png')
 
 
 if __name__ == '__main__':
-    pdb.set_trace()
-    main(*sys.argv[1:])
+    main()

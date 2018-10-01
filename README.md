@@ -7,12 +7,12 @@ Small demonstration of the difficulty to make decision confidence judgments for 
 On one of many repeated trials of the experiment, the learner is supposed to infer the latent variable of a Bernoulli process. This is similar to multiple tosses of a loaded coin of which we would like to infer the tendency to land "head" or "tail" .  Uncertainty and thus difficulty of the task is increased when the sample size is small. 
 
 The relevant statistics per trial are:
--- proportion of heads
--- sample size
+- proportion of heads
+- sample size
 
 Estimate:
--- whether the process (coin) favors "head" or "tail" (decision)  and
--- the confidence that your decision actually turns out to be correct
+- whether the process (coin) favors "head" or "tail" (decision)  and
+- the confidence that your decision actually turns out to be correct
 
 ## The learners
 We compare three different approaches to this problem by evaluating how their "deviation" from calibrated confidence judgments evolves over time.
