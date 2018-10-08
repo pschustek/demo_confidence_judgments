@@ -26,7 +26,7 @@ We compare three different approaches to this problem by evaluating how their "d
 Run the module `demo_comparison_confidence_judgments.py` as script or use it interactively through its `main()` method. The module `agents.py` implements the functionality of the learners and is imported by default.
 
 ## The result
-`![deviation over trial index](comparison_agents.png)`
+![deviation over trial index](comparison_agents.png)
 The probabilistic agent does not need feedback and makes approximately calibrated confidence judgments from the first trial. A mismatched prior distribution was introduced to show that its effects are not severe. In principle, the agent could use the feedback to learn this distribution over time by an hierarchical extension of its representation of the generative model.
 
 The mapping-based agents, on the other hand, depend on feedback and they take many trials to get anywhere near the performance of the probabilistic agent even in this relatively simple problem. In addition, the assumption, or feasibility, of batch learning is a rather strong one because all data needs to be memorized. However, for iterative on-line learning the performance gap is larger still.
